@@ -1,62 +1,21 @@
-# import copy, time
-# jogadores = list()
-# Keep = True
-# print('-' * 35)
-# while Keep:
-#     jogador = dict()
-#     gols = list()
-#     jogador["nome"] = str(input('Nome: '))
-#     while True:
-#         try:
-#             qnt_gols = int(input(f'Quantos gols {jogador["nome"]} conseguiu fazer: '))
-#             break
-#         except ValueError:
-#             print('Valor inválido! Verifique os campos.')
-# 
-#     for u in range(1, qnt_gols + 1):
-#         while True:
-#             try:
-#                 gol = int(input(f'\tQuantos gols na partida {u}? -> '))
-#                 gols.append(gol)
-#                 break
-#             except ValueError:
-#                 print('Valor inválido! Digite um número inteiro.')
-# 
-#     print('')
-#     jogador["gols"] = gols
-#     jogadores.append(copy.deepcopy(jogador))
-# 
-#     while True:
-#         decisao = str(input('Deseja inserir mais usuários? [S/N] -> ')).upper()[0]
-#         if decisao in ['S', 'N']:
-#             if decisao == 'S':
-#                 print('-' * 35)
-#                 break
-#             else:
-#                 print('\n' + '-' * 40)
-#                 print('      RELATÓRIO FINAL DOS JOGADORES')
-#                 print('-' * 40 + '\n')
-#                 for jogador in jogadores:
-#                     time.sleep(1)
-#                     print(f'Nome: {jogador["nome"]}')
-#                     for i, gol in enumerate(jogador["gols"]):
-#                         time.sleep(1)
-#                         print(f'\tPartida {i+1}: {gol} gols.')
-#                     print('-' * 35)
-#                 Keep = False
-#                 break
-#         else:
-#             print('Valor inválido! Digite apenas S ou N.')
+# Projeto principal - Nota Fiscal de Loja
 
+from datetime import datetime
 
+print('-------------- LOJA ---------------')
+print('Preencha os dados e terá a Nota Fiscal\n')
 
-## Projeto principal
+compra = []            # Lista de dicionários com produtos
+qnt_total = []         # Lista com quantidades de itens
+valor_final = []       # Lista com os valores totais por item
 
-nf = list()
 funcionar = True
 while funcionar:
     pessoa = dict()
+
+    # --- Cadastro de Nome ---
     while True:
+        print('-' * 35)
         nome = input('Nome: ').strip()
 
         if nome.replace(" ", "").isalpha():
@@ -64,66 +23,92 @@ while funcionar:
             break
         else:
             print('Valor inválido!')
+
     while True:
-        id = input('CPF ou CNPJ: ')
-        
-        id_limpo = id.replace(".", "").replace('-', "").replace("/", "").replace(" ", "")
-        
-        if id_limpo.replace(".", "").isalnum:
-            if len(id) == 11:
-                pessoa["cpf"] = id_limpo
-                break
-            elif len(id) == 14:
-                pessoa["cnpj"] = id_limpo
-                break
-            else:
-                print('CPF ou CNPJ inválido. Verifique os campos!')
+        id = input('CPF (somente números): ')
+        id_limpo = id.replace(".", "").replace("-", "").replace("/", "").replace(" ", "")
+
+        if id_limpo.isdigit() and len(id_limpo) == 11:
+            pessoa["cpf"] = id_limpo
+            break
+        else:
+            print('-' * 35)
+            print(' *** CPF inválido. Verifique os campos! ***')
+            print('-' * 35)
+
+    print('-' * 35)
+
+    # --- Cadastro de Produto(s) ---
     while True:
         carrinho = dict()
-        
-        item = input('Produto: ')
+
+        # Produto
+        item = input('\nProduto: ').strip()
         if item.replace(" ", "").isalpha():
             carrinho["produto"] = item
         else:
-            print('Entrada inválida! Verifique os campos')
+            print('Entrada inválida! Verifique os campos.')
             continue
-        
-        try:
-            qnt = int(input('Quantidade: '))
-            carrinho["quantidade"] = qnt
-        except ValueError:
-            print('Valor inválido, verifique os campos!')
-            continue
-        
-        
-        entrada = input('Valor R$ ').strip()
-            
-        # remove vírgulas, pontos e traços
-        entrada_limpa = entrada.replace(",",".").replace("-", "").replace(" ", "")
-            
+
+        # Quantidade
+        while True:
+            try:
+                qnt = int(input('Quantidade: '))
+                carrinho["quantidade"] = qnt
+                qnt_total.append(qnt)
+                break
+            except ValueError:
+                print('Valor inválido, verifique os campos!')
+
+        # Valor unitário
+        entrada = input('Valor: R$ ').strip()
+        entrada_limpa = entrada.replace(",", ".").replace("-", "").replace(" ", "")
+
         try:
             valor = float(entrada_limpa)
             carrinho["valor"] = valor
+            compra.append(carrinho)
         except ValueError:
-            print('Erro! Tente novamente')
+            print('Erro! Tente novamente.')
             continue
-        
-        valor_final = valor * qnt #  valor * quantidade 
-        
-        
-        decisao = str(input('Deseja inserir mais produtos? ')).upper()[0]
-        if decisao in ('S', 'N'):
-            if decisao == 'S':
-                print('Ok!')
-            elif decisao == 'N':
-                print('------- Programa Finalizado -------')
-                print(valor_final)
-                print(f'Dados do comprador: {pessoa}')
-                print(f'Quantidade de itens: {qnt}')
-                print(f'Itens: {carrinho}')
+
+        # Valor total por item (unitário * quantidade)
+        valorSomado = valor * qnt
+        valor_final.append(valorSomado)
+
+        # Continuar adicionando produtos?
+        decisao = input('\nDeseja inserir mais produtos? [S/N] ').strip().upper()
+        if decisao and decisao[0] in ('S', 'N'):
+            if decisao[0] == 'S':
+                print('-' * 35)
+                continue
+            elif decisao[0] == 'N':
+                print('\n------- Programa Finalizado -------\n')
+
+                # Horário atual
+                agora = datetime.now()
+                data_hora = agora.strftime('%d/%m/%Y %H:%M:%S')
+                print(f'Horário: {data_hora}\n')
+
+                # Dados da Pessoa
+                print(f'Nome: {pessoa["nome"]}')
+                print(f'CPF: {pessoa["cpf"]}\n')
+
+                # Dados da Compra
+                print('         Dados da compra')
+                print('-' * 35)
+                print(f'{"Qnt":>5}  {"Produto":<14} {"Valor":>10}')
+                print('-' * 35)
+
+                for itens in compra:
+                    nomeLimite = itens["produto"][:14]  # Limita nome do produto
+                    print(f'{itens["quantidade"]:>5}  {nomeLimite:<14}  R${itens["valor"]:>7.2f}')
+
+                print('\n' + '-' * 35)
+                print(f'        Valor final: R$ {sum(valor_final):.2f}')
+                print('-' * 35)
+
                 funcionar = False
                 break
-            else:
-                print('Erro!', 'Entrada inválida')
-        
-    
+        else:
+            print('Erro! Entrada inválida.')
